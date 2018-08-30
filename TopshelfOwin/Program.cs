@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Owin.Hosting;
+﻿using Topshelf;
 
 namespace TopshelfOwin
 {
@@ -11,12 +6,22 @@ namespace TopshelfOwin
     {
         static void Main(string[] args)
         {
-            using (WebApp.Start<Startup>("http://localhost:8085"))
+            HostFactory.Run(x =>
             {
-                Console.WriteLine("The application is started.");
-                Console.WriteLine("Press 'enter' to quit.");
-                Console.ReadLine();
-            }
+                x.Service<RestService>(s =>
+                {
+                    s.ConstructUsing(() => new RestService());
+                    s.WhenStarted(rs => rs.Start());
+                    s.WhenStopped(rs => rs.Stop());
+                    s.WhenShutdown(rs => rs.Stop());
+                });
+                x.RunAsLocalSystem();
+                x.StartAutomatically();
+
+                x.SetServiceName("WebApiRestService");
+                x.SetDisplayName("WebApiRestService");
+                x.SetDescription("This is an example of self-hosted web api rest service.");
+            });
         }
     }
 }
